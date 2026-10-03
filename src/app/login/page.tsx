@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/client";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 
@@ -33,11 +34,6 @@ function LoginContent() {
           <p className="text-sm text-muted-foreground">Sign in to access your inbox</p>
         </div>
 
-        {error === "unauthorized" && (
-          <p className="text-sm text-destructive text-center">
-            Access restricted to the inbox owner only.
-          </p>
-        )}
         {error === "auth_failed" && (
           <p className="text-sm text-destructive text-center">
             Authentication failed. Please try again.
@@ -48,6 +44,13 @@ function LoginContent() {
           <GoogleIcon />
           Continue with Google
         </Button>
+
+        <p className="text-xs text-muted-foreground text-center">
+          By continuing, you agree to our{" "}
+          <Link href="/terms" className="text-primary hover:underline">Terms of Service</Link>{" "}
+          and{" "}
+          <Link href="/privacy" className="text-primary hover:underline">Privacy Policy</Link>.
+        </p>
       </div>
     </main>
   );

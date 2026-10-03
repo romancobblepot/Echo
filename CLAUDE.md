@@ -139,9 +139,9 @@ A logging failure never blocks the send response — the email has already gone 
 - `POST /api/feedback` updates `star_rating`/`textual_feedback` on the specific `email_replies` row from that send (ownership-checked against the authenticated user).
 
 ### 9. Authentication
-- Google OAuth via Supabase Auth.
-- Owner-only access enforced via `OWNER_EMAIL` env var in `proxy.ts`.
+- Google OAuth via Supabase Auth — **multi-tenant**: any Google account can sign in and gets its own isolated inbox, knowledge base, settings, and drafts. (Originally single-owner-only via an `OWNER_EMAIL` env var gate in `proxy.ts`; removed once the product opened up to multiple users. The data layer never needed to change for this — every table was already scoped per-`user_id` with RLS policies keyed on `auth.uid() = user_id`, and no route uses the service-role key to bypass that, so isolation was correct from day one.)
 - All API routes return 401 for unauthenticated requests.
+- Public, unauthenticated routes (for Google OAuth verification and general access): `/login`, `/privacy`, `/terms`, `/auth/callback`, `/api/auth/*`.
 - Gmail OAuth scopes: `gmail.readonly`, `gmail.send`, `contacts.readonly` (the last one added for sender-avatar lookups — requires the **People API** to be enabled separately in Google Cloud Console, distinct from the Gmail API). `prompt: "consent"` is always forced on the auth URL so adding a new scope later just requires the user to click through a "Reconnect Gmail" flow (in the settings bar) rather than needing a fresh OAuth client.
 
 ---
@@ -222,7 +222,6 @@ GMAIL_CLIENT_SECRET=
 GMAIL_REDIRECT_URI=http://localhost:3000/api/auth/gmail/callback
 HF_TOKEN=
 ENCRYPTION_SECRET=        # 32-char random string for AES-256 key encryption
-OWNER_EMAIL=
 ```
 
 ---
@@ -241,7 +240,7 @@ OWNER_EMAIL=
 ### Phase 1 — Foundation & Auth ✅
 - Next.js 16 + Tailwind + shadcn/ui scaffolded in `/frontend`
 - Google OAuth via Supabase Auth
-- Owner-only enforcement via `proxy.ts`
+- Originally owner-only (single `OWNER_EMAIL` gate in `proxy.ts`); opened up to multi-tenant sign-in post-launch — see Phase 8
 
 ### Phase 2 — File Upload & Vector DB ✅
 - Drag-and-drop file/folder upload with SSE progress bar
@@ -304,11 +303,18 @@ Also fixed during this phase: two `globals.css`/dependency regressions from the 
 
 **Sub-phase 11** ✅ — one-button minimize for the Smart Reply panel (`inbox.tsx`, `ThreadPanel`): the nested `ResizablePanel` holding the draft assistant is now `collapsible` with `collapsedSize="0"`, driven by `react-resizable-panels`' imperative `usePanelRef()`/`panelRef` API. A `PanelRightClose`/`PanelRightOpen` icon button in the thread header calls `.collapse()`/`.expand()` directly — previously the only way to shrink it was dragging the resize handle all the way down, which was fiddly and didn't fully hide it. `onResize` tracks collapsed state (`asPercentage === 0`) to flip the icon; the panel's content is deliberately kept mounted (not conditionally unmounted) while collapsed so in-progress drafting state isn't lost on restore.
 
+### Phase 8 — Public Launch & Multi-Tenant Access ✅
+- Removed the `OWNER_EMAIL` single-user gate from `proxy.ts` — any authenticated Google account can now sign in and use Echo. No data-layer changes were needed: every table (`user_settings`, `uploaded_files`, `doc_chunks`, `email_replies`) already carries its own RLS policy scoped to `auth.uid() = user_id`, and no API route uses the service-role key to bypass it, so per-user isolation (own inbox, own knowledge base, own settings) was already correct.
+- Added public `/privacy` and `/terms` pages (exempted from the auth gate in `proxy.ts`, alongside `/login`), linked from the login page footer. Required for Google's OAuth consent screen, and specifically for verifying the `gmail.send`/`gmail.readonly`/`contacts.readonly` scopes.
+- **Still outstanding (external, not a code task):** the Google Cloud OAuth consent screen likely needs to move from "Testing" (capped at 100 allowlisted test-user emails, with an "unverified app" warning) to a fully verified "In production" state before truly arbitrary strangers can sign in. Because `gmail.send` is a sensitive/restricted scope — and because Echo forwards email content and document context to third-party LLM providers — this will likely require Google's verification process: a filled-out OAuth consent screen (app name, logo, support email, the `/privacy` and `/terms` URLs above, authorized domain), a scope-justification write-up and demo video, and possibly a CASA security assessment. This is a multi-week external review process owned by whoever controls the Google Cloud project, not something that can be completed from the codebase.
+
 ---
 
 ## Known Issues / Future Work
 
 See `CHANGELOG.md`'s "Known Issues / Accepted Limitations" section (eBay avatar ceiling, deprioritized mobile responsiveness, etc.) — kept there rather than duplicated here.
+
+- **Google OAuth verification pending** — see Phase 8 above. Until the consent screen is verified (or test users are added), only allowlisted Google accounts can complete sign-in, regardless of the app's own access logic.
 
 ## Key Constraints & Rules
 

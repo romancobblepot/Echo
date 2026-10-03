@@ -231,6 +231,37 @@ Suggestions made before Phase 4 build, all adopted:
 
 ---
 
+## Public Launch Round
+
+1. **Deployed to Vercel, got a blanket Internal Server Error on every page** (including
+   `/login`). Root cause: `proxy.ts` runs on every request and crashes immediately if
+   `NEXT_PUBLIC_SUPABASE_URL`/`NEXT_PUBLIC_SUPABASE_ANON_KEY` aren't set — not a code bug,
+   just missing environment variables in the Vercel project settings. Resolved by adding
+   all 9 required vars (the full list, including `ENCRYPTION_SECRET`, which `.env.example`
+   had been missing) and redeploying. Also found `.gitignore`'s blanket `.env*` pattern was
+   silently excluding `.env.example` itself from git (a template file with no real secrets)
+   — carved out a `!.env.example` exception so it's actually tracked.
+2. **"Anyone should be able to sign in with their mail and use this app"** — the app had an
+   `OWNER_EMAIL` single-user gate in `proxy.ts` from the original spec. Removed it; this
+   didn't require any database changes since every table (`user_settings`,
+   `uploaded_files`, `doc_chunks`, `email_replies`) already had RLS policies scoped to
+   `auth.uid() = user_id`, and no API route used the service-role key to bypass that — the
+   per-user data isolation was already correct from Phase 1. Also added public `/privacy`
+   and `/terms` pages (required for Google's OAuth consent screen and for verifying the
+   `gmail.send`/`gmail.readonly`/`contacts.readonly` scopes), linked from the login page.
+   Flagged separately: Google's own OAuth consent screen likely still needs to move from
+   "Testing" (100-account allowlist cap) to a verified "In production" state before truly
+   arbitrary strangers can sign in — that's an external, multi-week Google review process
+   (consent screen details, scope justification + demo video, possibly a CASA security
+   assessment for the sensitive `gmail.send` scope), not something resolvable in the
+   codebase.
+3. **Product renamed to "Echo"**, with the tagline "Replies drafted for you, but sent by
+   you" added across the login page, dashboard header, and page metadata. Wordmark sized
+   up (`text-6xl` login / `text-3xl` dashboard) with wider letter-spacing, tagline stacked
+   directly beneath it at a smaller fixed size.
+
+---
+
 ## Known Issues / Accepted Limitations
 
 - **eBay avatars** will likely keep showing their small legacy 16x16 `/favicon.ico` rather than a

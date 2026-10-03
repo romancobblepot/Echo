@@ -35,7 +35,9 @@ export async function proxy(request: NextRequest) {
   if (
     pathname.startsWith("/login") ||
     pathname.startsWith("/auth/callback") ||
-    pathname.startsWith("/api/auth")
+    pathname.startsWith("/api/auth") ||
+    pathname.startsWith("/privacy") ||
+    pathname.startsWith("/terms")
   ) {
     return supabaseResponse;
   }
@@ -43,12 +45,6 @@ export async function proxy(request: NextRequest) {
   // Unauthenticated → redirect to login
   if (!user) {
     return NextResponse.redirect(new URL("/login", request.url));
-  }
-
-  // Owner-only check
-  const ownerEmail = process.env.OWNER_EMAIL;
-  if (ownerEmail && user.email !== ownerEmail) {
-    return NextResponse.redirect(new URL("/login?error=unauthorized", request.url));
   }
 
   return supabaseResponse;
