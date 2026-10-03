@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Echo",
-  description: "AI-powered Gmail reply assistant grounded in your own knowledge base.",
+  description: "Replies drafted for you, sent by you.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

@@ -13,7 +13,10 @@ export default async function DashboardPage() {
   return (
     <main className="min-h-screen bg-background flex flex-col">
       <header className="border-b px-6 py-3 flex items-center justify-between shrink-0">
-        <h1 className="text-lg font-semibold">Echo</h1>
+        <div className="flex items-baseline gap-2">
+          <h1 className="text-lg font-semibold">Echo</h1>
+          <span className="text-xs text-muted-foreground hidden sm:inline">Replies drafted for you, sent by you</span>
+        </div>
         <div className="flex items-center gap-3">
           <span className="text-sm text-muted-foreground">{user.email}</span>
           <ThemeToggle />
