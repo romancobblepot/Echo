@@ -238,7 +238,7 @@ ENCRYPTION_SECRET=        # 32-char random string for AES-256 key encryption
 ## Phased Implementation Plan
 
 ### Phase 1 — Foundation & Auth ✅
-- Next.js 16 + Tailwind + shadcn/ui scaffolded in `/frontend`
+- Next.js 16 + Tailwind + shadcn/ui scaffolded at the repo root (originally scaffolded in `/frontend`, later flattened — the app lives at the project root, not a nested subfolder)
 - Google OAuth via Supabase Auth
 - Originally owner-only (single `OWNER_EMAIL` gate in `proxy.ts`); opened up to multi-tenant sign-in post-launch — see Phase 8
 
