@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Echo",
-  description: "Replies drafted for you, sent by you.",
+  description: "Replies drafted for you, but sent by you.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
