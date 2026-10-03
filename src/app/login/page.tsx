@@ -28,8 +28,8 @@ function LoginContent() {
       </div>
       <div className="w-full max-w-sm flex flex-col items-center gap-6 p-8 rounded-2xl border shadow-sm">
         <div className="text-center space-y-1">
-          <h1 className="text-5xl font-bold tracking-tight">Echo</h1>
-          <p className="text-sm text-muted-foreground">Replies drafted for you, sent by you</p>
+          <h1 className="text-6xl font-bold tracking-wide">Echo</h1>
+          <p className="text-base text-muted-foreground tracking-wide">Replies drafted for you, sent by you</p>
           <p className="text-sm text-muted-foreground">Sign in to access your inbox</p>
         </div>
 
