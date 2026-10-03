@@ -17,7 +17,16 @@ function LoginContent() {
       provider: "google",
       options: {
         redirectTo: `${window.location.origin}/auth/callback`,
-        scopes: "email profile",
+        // Requesting Gmail/Contacts scopes here (not just identity) so sign-in and Gmail
+        // access happen in a single consent screen — keep this in sync with SCOPES in
+        // lib/gmail.ts. access_type+prompt=consent are required for Google to hand back a
+        // refresh token, which /auth/callback persists alongside the Supabase session.
+        scopes:
+          "email profile https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/contacts.readonly",
+        queryParams: {
+          access_type: "offline",
+          prompt: "consent",
+        },
       },
     });
   }

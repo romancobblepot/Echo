@@ -26,8 +26,24 @@ export async function GET(request: NextRequest) {
       }
     );
 
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
+      // Google was asked for Gmail/Contacts scopes alongside identity (see login/page.tsx),
+      // so the provider's access/refresh tokens come back on the session here — persist them
+      // now so the dashboard never needs a second, separate "Connect Gmail" consent screen.
+      const providerToken = data.session?.provider_token;
+      const providerRefreshToken = data.session?.provider_refresh_token;
+      if (providerToken && data.user) {
+        await supabase.from("user_settings").upsert({
+          user_id: data.user.id,
+          gmail_access_token: providerToken,
+          gmail_refresh_token: providerRefreshToken ?? null,
+          // Supabase doesn't surface the Google token's own expiry, so approximate Google's
+          // standard 1-hour access token lifetime; getAuthedClient() refreshes from here on.
+          gmail_token_expiry: new Date(Date.now() + 3500 * 1000).toISOString(),
+          updated_at: new Date().toISOString(),
+        });
+      }
       return response;
     }
   }
