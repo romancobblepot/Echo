@@ -1,3 +1,8 @@
+Hello everyone, i built this project as a part of my context engineering and agentic engineering learning. The UI/UX and all didn't matter for me here in this. What honestly mattered was implementing something that atleast as a nano-product seems like a scalable engineering prototype. I completely own the high-level design features, Memory Architecure, Context Management, RAG pipeline and feedback loop system (per user).
+
+I want to work more on it and iteratively make it better as i read and learn things along the way.
+
+
 # Echo
 
 **Replies drafted for you, but sent by you.**
